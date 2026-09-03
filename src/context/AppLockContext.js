@@ -3,7 +3,9 @@ import { AppState } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
 
-const STORAGE_KEY = 'papertrail:biometricLockEnabled';
+// SecureStore keys are restricted to alphanumerics plus ".", "-", "_" (unlike
+// the AsyncStorage keys used elsewhere in this app, which allow ":") — no colon.
+const STORAGE_KEY = 'papertrail.biometricLockEnabled';
 
 // Re-lock only if the app was backgrounded longer than this — a quick trip to
 // the share sheet (CSV export), a permission dialog, or the date picker
