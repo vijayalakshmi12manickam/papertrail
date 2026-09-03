@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { useAppTheme } from '../context/ThemeContext';
+import BrandHeader from '../components/common/BrandHeader';
 
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import ExpensesScreen from '../screens/expenses/ExpensesScreen';
@@ -39,7 +40,11 @@ export default function MainTabs() {
         tabBarIcon: () => <Text style={{ fontSize: 18 }}>{ICONS[route.name]}</Text>,
       })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardScreen}
+        options={{ headerTitle: () => <BrandHeader /> }}
+      />
       <Tab.Screen name="Expenses" component={ExpensesScreen} />
       <Tab.Screen name="Budget" component={BudgetScreen} />
       <Tab.Screen name="Shared" component={SharedExpensesScreen} />

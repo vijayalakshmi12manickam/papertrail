@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, FlatList, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, FlatList, Text, Pressable, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useCategories } from '../../hooks/useCategories';
 import { useAccounts } from '../../hooks/useAccounts';
@@ -22,7 +22,7 @@ export default function ExpensesScreen() {
   const [formMode, setFormMode] = useState(null); // null | 'add' | 'edit'
 
   const { start, end } = useMemo(() => getMonthRange(year, monthIndex), [year, monthIndex]);
-  const { data: expenses = [], isLoading } = useExpensesInRange(start, end);
+  const { data: expenses = [], isLoading, isRefetching, refetch } = useExpensesInRange(start, end);
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
 
@@ -96,6 +96,9 @@ export default function ExpensesScreen() {
           data={filteredExpenses}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: theme.spacing.md, paddingBottom: 96 }}
+          refreshControl={
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={theme.colors.accent} colors={[theme.colors.accent]} />
+          }
           renderItem={({ item }) => (
             <ExpenseListItem
               expense={item}

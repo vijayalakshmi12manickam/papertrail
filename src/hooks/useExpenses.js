@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { expensesCol, expenseDoc } from '../../firebase/collections';
 import { useAuth } from '../context/AuthContext';
+import { toJsDate } from '../lib/format';
 
 export function toTimestamp(date) {
   return date instanceof Date ? Timestamp.fromDate(date) : Timestamp.fromDate(new Date(date));
@@ -26,6 +27,31 @@ export async function fetchExpensesInRange(uid, startDate, endDate) {
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+// Deliberately no `orderBy('date')` alongside the array-contains filter — that
+// combination needs a composite index Firestore won't have provisioned, and
+// this list is rarely large enough for server-side sorting to matter. Sorted
+// client-side instead.
+export async function fetchExpensesByTag(uid, tag) {
+  const q = query(expensesCol(uid), where('tags', 'array-contains', tag));
+  const snap = await getDocs(q);
+  const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  rows.sort((a, b) => (toJsDate(b.date)?.getTime() || 0) - (toJsDate(a.date)?.getTime() || 0));
+  return rows;
+}
+
+// Backs the dedicated "all expenses for this tag" view opened from the
+// Dashboard tag cloud — unlike the recent-expenses widget, this isn't limited
+// to the current month or a short preview length.
+export function useExpensesByTag(tag) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['expensesByTag', user?.uid, tag],
+    queryFn: () => fetchExpensesByTag(user.uid, tag),
+    enabled: !!user && !!tag,
+    staleTime: 2 * 60 * 1000,
+  });
 }
 
 // Fetches exactly the window a screen needs (e.g. one month for Expenses tab,

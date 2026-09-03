@@ -20,3 +20,6 @@ export const budgetDoc = (uid, id) => doc(db, 'users', uid, 'budgets', id);
 
 export const settlementsCol = (uid) => collection(db, 'users', uid, 'settlements');
 export const settlementDoc = (uid, id) => doc(db, 'users', uid, 'settlements', id);
+
+export const currenciesCol = (uid) => collection(db, 'users', uid, 'currencies');
+export const currencyDoc = (uid, id) => doc(db, 'users', uid, 'currencies', id);

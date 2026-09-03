@@ -1,4 +1,8 @@
-import * as FileSystem from 'expo-file-system';
+// expo-file-system's default export (SDK 54+) is the new `File`/`Paths` API,
+// which has no `EncodingType` — that's what threw "Cannot read property UTF8
+// of undefined" here. `expo-file-system/legacy` keeps the old
+// documentDirectory/writeAsStringAsync/EncodingType API this file relies on.
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as XLSX from 'xlsx';
 import { buildExportRows, buildCsv, HEADERS } from './exportRows';

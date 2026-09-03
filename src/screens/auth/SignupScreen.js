@@ -4,6 +4,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import TextField from '../../components/common/TextField';
 import Button from '../../components/common/Button';
+import BrandHeader from '../../components/common/BrandHeader';
 
 export default function SignupScreen({ navigation }) {
   const { theme } = useAppTheme();
@@ -44,8 +45,14 @@ export default function SignupScreen({ navigation }) {
       style={{ flex: 1, backgroundColor: theme.colors.background }}
     >
       <View style={[styles.container, { padding: theme.spacing.lg }]}>
-        <Text style={[theme.typography.h1, { color: theme.colors.textPrimary, marginBottom: theme.spacing.xl }]}>
-          Create account
+        <BrandHeader size={28} textStyle={theme.typography.h1} />
+        <Text
+          style={[
+            theme.typography.body,
+            { color: theme.colors.textSecondary, marginTop: 4, marginBottom: theme.spacing.xl },
+          ]}
+        >
+          Create your account
         </Text>
 
         <TextField

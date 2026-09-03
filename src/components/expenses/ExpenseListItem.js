@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../context/ThemeContext';
 import { formatCurrency, formatDate, toJsDate } from '../../lib/format';
 
-export default function ExpenseListItem({ expense, category, account, onPress }) {
+export default function ExpenseListItem({ expense, category, account, onPress, showTotal = false }) {
   const { theme } = useAppTheme();
   const isShared = expense.isShared;
+  const displayAmount = showTotal && isShared ? expense.totalAmount : expense.amount;
 
   return (
     <Pressable
@@ -30,12 +32,15 @@ export default function ExpenseListItem({ expense, category, account, onPress })
         <Text style={{ fontSize: 16 }}>{category?.icon || '📦'}</Text>
       </View>
 
-      <View style={{ flex: 1, marginLeft: theme.spacing.sm }}>
+      <View style={{ flex: 1, marginLeft: theme.spacing.sm, minWidth: 0 }}>
         <Text style={[theme.typography.bodyStrong, { color: theme.colors.textPrimary }]} numberOfLines={1}>
           {expense.item}
         </Text>
         <View style={styles.metaRow}>
-          <Text style={[theme.typography.caption, { color: theme.colors.textSecondary }]}>
+          <Text
+            style={[theme.typography.caption, { color: theme.colors.textSecondary, flexShrink: 1 }]}
+            numberOfLines={1}
+          >
             {formatDate(toJsDate(expense.date))} · {account?.name || 'Unknown'}
           </Text>
           {isShared ? (
@@ -45,17 +50,20 @@ export default function ExpenseListItem({ expense, category, account, onPress })
                 { backgroundColor: theme.colors.shared + '30', borderRadius: theme.radius.pill },
               ]}
             >
-              <Text style={[theme.typography.caption, { color: theme.colors.shared, fontWeight: '700' }]}>
-                Shared
-              </Text>
+              <Ionicons name="people" size={12} color={theme.colors.shared} />
             </View>
           ) : null}
         </View>
       </View>
 
-      <Text style={[theme.typography.amount, { color: theme.colors.textPrimary }]}>
-        {formatCurrency(expense.amount, expense.currency)}
-      </Text>
+      <View style={{ marginLeft: theme.spacing.sm, alignItems: 'flex-end' }}>
+        <Text style={[theme.typography.amount, { color: theme.colors.textPrimary }]} numberOfLines={1}>
+          {formatCurrency(displayAmount, expense.currency)}
+        </Text>
+        {showTotal && isShared ? (
+          <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>total</Text>
+        ) : null}
+      </View>
     </Pressable>
   );
 }
@@ -82,7 +90,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
 });

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal as RNModal, View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
+import { Modal as RNModal, View, Text, Pressable, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../context/ThemeContext';
 
 export default function Modal({ visible, onClose, title, children, footer }) {

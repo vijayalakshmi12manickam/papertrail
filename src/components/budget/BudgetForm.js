@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useCategories } from '../../hooks/useCategories';
+import { useCurrencies } from '../../hooks/useCurrencies';
 import { getMonthRange } from '../../hooks/useExpenses';
 import { toJsDate } from '../../lib/format';
 import TextField from '../common/TextField';
@@ -13,11 +14,11 @@ const SCOPE_TYPES = [
   { label: 'Category', value: 'category' },
   { label: 'Tag', value: 'tag' },
 ];
-const CURRENCIES = ['GBP', 'USD', 'EUR', 'ISK', 'JPY', 'AUD', 'CAD'].map((c) => ({ label: c, value: c }));
 
 export default function BudgetForm({ initialBudget, onSubmit, onCancel, submitting }) {
   const { theme } = useAppTheme();
   const { data: categories = [] } = useCategories();
+  const { data: currencies = [] } = useCurrencies();
   const isEdit = !!initialBudget;
 
   const [scopeType, setScopeType] = useState(initialBudget?.scopeType || 'category');
@@ -63,6 +64,7 @@ export default function BudgetForm({ initialBudget, onSubmit, onCancel, submitti
   };
 
   const categoryOptions = categories.map((c) => ({ label: c.name, value: c.id, icon: c.icon }));
+  const currencyOptions = currencies.map((c) => ({ label: c.name, value: c.name }));
 
   return (
     <ScrollView contentContainerStyle={{ padding: theme.spacing.md }} keyboardShouldPersistTaps="handled">
@@ -156,7 +158,7 @@ export default function BudgetForm({ initialBudget, onSubmit, onCancel, submitti
           />
         </View>
         <View style={{ flex: 1 }}>
-          <Select label="Currency" options={CURRENCIES} value={currency} onChange={setCurrency} />
+          <Select label="Currency" options={currencyOptions} value={currency} onChange={setCurrency} />
         </View>
       </View>
 

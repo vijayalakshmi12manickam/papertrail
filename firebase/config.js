@@ -4,11 +4,7 @@ import {
   getReactNativePersistence,
   getAuth,
 } from "firebase/auth";
-import {
-  initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager,
-} from "firebase/firestore";
+import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Replace with your Firebase project config (Settings > Project settings in Firebase console).
@@ -35,13 +31,16 @@ try {
   auth = getAuth(app);
 }
 
-// persistentLocalCache enables full offline read/write with sync-on-reconnect.
-// This is what makes "log an expense with no signal" work for free — no extra
-// Firebase product needed, it's built into the Firestore SDK.
+// persistentLocalCache needs IndexedDB (via LocalStorage), which doesn't exist
+// in React Native — the SDK detected that and was silently falling back to
+// memory cache anyway (with a console warning on every launch). memoryLocalCache
+// is that same fallback made explicit: reads/writes are cached and offline
+// writes still queue and sync on reconnect, but only for the current app
+// session — nothing survives a force-quit while offline. Cross-restart offline
+// data for reference lists (categories/accounts/currencies) is instead handled
+// by the AsyncStorage-backed React Query persister in App.js.
 const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager(),
-  }),
+  localCache: memoryLocalCache(),
 });
 
 export { app, auth, db };

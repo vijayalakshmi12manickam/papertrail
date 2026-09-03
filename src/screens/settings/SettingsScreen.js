@@ -4,6 +4,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCategories, useAddCategory, useDeleteCategory } from '../../hooks/useCategories';
 import { useAccounts, useAddAccount, useDeleteAccount } from '../../hooks/useAccounts';
+import { useCurrencies, useAddCurrency, useDeleteCurrency } from '../../hooks/useCurrencies';
 import { useSeedSampleData } from '../../hooks/useSeedSampleData';
 import { fetchAllExpensesOnce } from '../../lib/fetchAllExpensesOnce';
 import { exportExpensesAsCsv, exportExpensesAsXlsx } from '../../lib/exportFile';
@@ -11,6 +12,7 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import ThemeToggle from '../../components/settings/ThemeToggle';
 import ManagedListSection from '../../components/settings/ManagedListSection';
+import CollapsibleSection from '../../components/common/CollapsibleSection';
 
 export default function SettingsScreen() {
   const { theme } = useAppTheme();
@@ -24,11 +26,22 @@ export default function SettingsScreen() {
   const addAccount = useAddAccount();
   const deleteAccount = useDeleteAccount();
 
+  const { data: currencies = [] } = useCurrencies();
+  const addCurrency = useAddCurrency();
+  const deleteCurrency = useDeleteCurrency();
+
   const [exporting, setExporting] = useState(null); // null | 'csv' | 'xlsx'
   const seedSampleData = useSeedSampleData();
 
   const categoryById = useMemo(() => Object.fromEntries(categories.map((c) => [c.id, c])), [categories]);
   const accountById = useMemo(() => Object.fromEntries(accounts.map((a) => [a.id, a])), [accounts]);
+
+  // useMutation exposes the variables it was last called with while pending, so
+  // this identifies exactly which row's delete is in flight — not just "some
+  // delete is happening" — letting the list show a spinner on that one row.
+  const deletingCategoryId = deleteCategory.isPending ? deleteCategory.variables : null;
+  const deletingAccountId = deleteAccount.isPending ? deleteAccount.variables : null;
+  const deletingCurrencyId = deleteCurrency.isPending ? deleteCurrency.variables : null;
 
   const handleDeleteCategory = (id) => {
     Alert.alert('Delete category?', 'Existing expenses keep this category, but it will no longer appear as an option.', [
@@ -42,6 +55,17 @@ export default function SettingsScreen() {
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => deleteAccount.mutate(id) },
     ]);
+  };
+
+  const handleDeleteCurrency = (id) => {
+    Alert.alert(
+      'Delete currency?',
+      'Existing expenses keep their currency, but it will no longer appear as an option.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteCurrency.mutate(id) },
+      ]
+    );
   };
 
   const handleExport = async (format) => {
@@ -111,25 +135,46 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={{ marginBottom: theme.spacing.md }}>
-        <ManagedListSection
-          title="Categories"
-          items={categories}
-          onAdd={(data) => addCategory.mutate(data)}
-          onDelete={handleDeleteCategory}
-          adding={addCategory.isPending}
-          namePlaceholder="e.g. Subscriptions"
-        />
+        <CollapsibleSection title="Categories">
+          <ManagedListSection
+            items={categories}
+            onAdd={(data) => addCategory.mutate(data)}
+            onDelete={handleDeleteCategory}
+            adding={addCategory.isPending}
+            deletingId={deletingCategoryId}
+            namePlaceholder="e.g. Subscriptions"
+            hideTitle
+          />
+        </CollapsibleSection>
       </Card>
 
       <Card style={{ marginBottom: theme.spacing.md }}>
-        <ManagedListSection
-          title="Accounts / Banks"
-          items={accounts}
-          onAdd={(data) => addAccount.mutate(data)}
-          onDelete={handleDeleteAccount}
-          adding={addAccount.isPending}
-          namePlaceholder="e.g. Monzo"
-        />
+        <CollapsibleSection title="Accounts / Banks">
+          <ManagedListSection
+            items={accounts}
+            onAdd={(data) => addAccount.mutate(data)}
+            onDelete={handleDeleteAccount}
+            adding={addAccount.isPending}
+            deletingId={deletingAccountId}
+            namePlaceholder="e.g. Monzo"
+            hideTitle
+          />
+        </CollapsibleSection>
+      </Card>
+
+      <Card style={{ marginBottom: theme.spacing.md }}>
+        <CollapsibleSection title="Currencies">
+          <ManagedListSection
+            items={currencies}
+            onAdd={(data) => addCurrency.mutate(data)}
+            onDelete={handleDeleteCurrency}
+            adding={addCurrency.isPending}
+            deletingId={deletingCurrencyId}
+            namePlaceholder="e.g. CHF"
+            showIcon={false}
+            hideTitle
+          />
+        </CollapsibleSection>
       </Card>
 
       <Card style={{ marginBottom: theme.spacing.md }}>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useExpensesInRange, getYearRange, getMonthRange } from './useExpenses';
 
 // Query keys match useExpensesInRange's convention exactly, so if the user
@@ -21,10 +21,17 @@ export function useDashboardData(selectedYear) {
   const currentMonthQuery = useExpensesInRange(curStart, curEnd);
   const lastMonthQuery = useExpensesInRange(lastStart, lastEnd);
 
+  const refetch = useCallback(
+    () => Promise.all([yearQuery.refetch(), currentMonthQuery.refetch(), lastMonthQuery.refetch()]),
+    [yearQuery.refetch, currentMonthQuery.refetch, lastMonthQuery.refetch]
+  );
+
   return {
     yearExpenses: yearQuery.data || [],
     currentMonthExpenses: currentMonthQuery.data || [],
     lastMonthExpenses: lastMonthQuery.data || [],
     isLoading: yearQuery.isLoading || currentMonthQuery.isLoading || lastMonthQuery.isLoading,
+    isRefetching: yearQuery.isRefetching || currentMonthQuery.isRefetching || lastMonthQuery.isRefetching,
+    refetch,
   };
 }

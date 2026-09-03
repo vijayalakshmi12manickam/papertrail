@@ -65,6 +65,7 @@ export default function PersonDetailContent({
             category={categoryById[e.categoryId]}
             account={accountById[e.accountId]}
             onPress={onExpensePress}
+            showTotal
           />
         ))
       )}

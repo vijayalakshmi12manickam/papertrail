@@ -1,3 +1,24 @@
+// Budgets are edited via date pickers that only show a calendar day (no time
+// picker), but the underlying Date objects keep whatever time-of-day they were
+// created with — e.g. a brand-new budget defaults `periodStart` to `new Date()`
+// (the exact moment of creation). Used raw, that excludes any expense dated
+// earlier the same day (added before the budget was created) and, at the other
+// end, expenses dated exactly on `periodEnd`'s calendar day. Normalizing both
+// ends to full calendar-day boundaries makes the range behave the way the UI
+// presents it: every expense dated anywhere within [periodStart, periodEnd],
+// regardless of when the budget itself was created or edited.
+export function startOfDay(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+export function endOfDayExclusive(date) {
+  const d = startOfDay(date);
+  d.setDate(d.getDate() + 1);
+  return d;
+}
+
 // A budget "matches" an expense if it's scoped to that expense's category,
 // or scoped to a tag the expense carries. Income rows never count against
 // a spending budget.

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Pressable, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useCategories } from '../../hooks/useCategories';
 import { useBudgetsWithProgress } from '../../hooks/useBudgetProgress';
@@ -10,7 +10,7 @@ import Modal from '../../components/common/Modal';
 
 export default function BudgetScreen() {
   const { theme } = useAppTheme();
-  const { budgets, isLoading } = useBudgetsWithProgress();
+  const { budgets, isLoading, isRefetching, refetch } = useBudgetsWithProgress();
   const { data: categories = [] } = useCategories();
 
   const [formMode, setFormMode] = useState(null); // null | 'add' | 'edit'
@@ -51,6 +51,9 @@ export default function BudgetScreen() {
           data={budgets}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: theme.spacing.md, paddingBottom: 96 }}
+          refreshControl={
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={theme.colors.accent} colors={[theme.colors.accent]} />
+          }
           renderItem={({ item }) => {
             const category = categoryById[item.scopeValue];
             return (

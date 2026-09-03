@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useCategories } from '../../hooks/useCategories';
 import { useAccounts } from '../../hooks/useAccounts';
+import { useCurrencies } from '../../hooks/useCurrencies';
 import { calculateSplit } from '../../lib/splitCalculators';
 import { toJsDate } from '../../lib/format';
 import TextField from '../common/TextField';
@@ -18,8 +19,6 @@ const TXN_TYPES = [
   { label: 'Other', value: 'other' },
 ];
 
-const CURRENCIES = ['GBP', 'USD', 'EUR', 'ISK', 'JPY', 'AUD', 'CAD'].map((c) => ({ label: c, value: c }));
-
 const SPLIT_TYPES = [
   { label: 'Equal', value: 'equal' },
   { label: 'Percentage', value: 'percentage' },
@@ -31,6 +30,7 @@ export default function ExpenseForm({ initialExpense, onSubmit, onCancel, submit
   const { theme } = useAppTheme();
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
+  const { data: currencies = [] } = useCurrencies();
 
   const isEdit = !!initialExpense;
 
@@ -131,6 +131,7 @@ export default function ExpenseForm({ initialExpense, onSubmit, onCancel, submit
 
   const categoryOptions = categories.map((c) => ({ label: c.name, value: c.id, icon: c.icon }));
   const accountOptions = accounts.map((a) => ({ label: a.name, value: a.id, icon: a.icon }));
+  const currencyOptions = currencies.map((c) => ({ label: c.name, value: c.name }));
 
   return (
     <ScrollView contentContainerStyle={{ padding: theme.spacing.md }} keyboardShouldPersistTaps="handled">
@@ -187,7 +188,7 @@ export default function ExpenseForm({ initialExpense, onSubmit, onCancel, submit
           <Select label="Type" options={TXN_TYPES} value={txnType} onChange={setTxnType} />
         </View>
         <View style={{ flex: 1 }}>
-          <Select label="Currency" options={CURRENCIES} value={currency} onChange={setCurrency} />
+          <Select label="Currency" options={currencyOptions} value={currency} onChange={setCurrency} />
         </View>
       </View>
 

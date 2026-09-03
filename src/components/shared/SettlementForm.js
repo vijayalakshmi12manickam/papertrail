@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useCurrencies } from '../../hooks/useCurrencies';
 import TextField from '../common/TextField';
 import Select from '../common/Select';
 import Button from '../common/Button';
@@ -13,6 +14,7 @@ const DIRECTIONS = [
 
 export default function SettlementForm({ initialPersonName, initialDirection, initialAmount, initialCurrency, onSubmit, onCancel, submitting }) {
   const { theme } = useAppTheme();
+  const { data: currencies = [] } = useCurrencies();
 
   const [personName, setPersonName] = useState(initialPersonName || '');
   const [direction, setDirection] = useState(initialDirection || 'theyPaidMe');
@@ -76,7 +78,7 @@ export default function SettlementForm({ initialPersonName, initialDirection, in
         <View style={{ flex: 1 }}>
           <Select
             label="Currency"
-            options={['GBP', 'USD', 'EUR', 'ISK', 'JPY', 'AUD', 'CAD'].map((c) => ({ label: c, value: c }))}
+            options={currencies.map((c) => ({ label: c.name, value: c.name }))}
             value={currency}
             onChange={setCurrency}
           />

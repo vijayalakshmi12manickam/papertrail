@@ -12,6 +12,23 @@ export function formatCurrency(amount, currencyCode = 'GBP') {
   }
 }
 
+// Best-effort currency symbol for a 3-letter code (e.g. 'GBP' -> '£'). Falls
+// back to the code itself for anything Intl doesn't recognize — which
+// includes user-added currencies that aren't real ISO 4217 codes.
+export function getCurrencySymbol(currencyCode) {
+  try {
+    const parts = new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: currencyCode,
+      currencyDisplay: 'narrowSymbol',
+    }).formatToParts(0);
+    const symbolPart = parts.find((p) => p.type === 'currency');
+    return symbolPart ? symbolPart.value : currencyCode;
+  } catch (e) {
+    return currencyCode;
+  }
+}
+
 export function formatDate(date, opts = {}) {
   const d = toJsDate(date);
   if (!d) return '';

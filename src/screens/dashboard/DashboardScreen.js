@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useCategories } from '../../hooks/useCategories';
 import { useAccounts } from '../../hooks/useAccounts';
@@ -11,25 +11,27 @@ import {
   computeMonthComparison,
 } from '../../lib/aggregations';
 import Card from '../../components/common/Card';
-import Select from '../../components/common/Select';
 import MonthComparisonCard from '../../components/dashboard/MonthComparisonCard';
 import TrendChart from '../../components/dashboard/TrendChart';
 import CategoryBreakdownList from '../../components/dashboard/CategoryBreakdownList';
 import TagCloud from '../../components/dashboard/TagCloud';
+import TagExpensesList from '../../components/dashboard/TagExpensesList';
+import CurrencySwitcher from '../../components/dashboard/CurrencySwitcher';
 import RecentExpensesWidget from '../../components/dashboard/RecentExpensesWidget';
 import Modal from '../../components/common/Modal';
 import ExpenseDetailContent from '../../components/expenses/ExpenseDetailContent';
 
-export default function DashboardScreen() {
+export default function DashboardScreen({ navigation }) {
   const { theme } = useAppTheme();
   const now = useMemo(() => new Date(), []);
   const [year, setYear] = useState(now.getFullYear());
   const [displayCurrency, setDisplayCurrency] = useState('GBP');
   const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [tagModalTag, setTagModalTag] = useState(null);
   const [selectedExpense, setSelectedExpense] = useState(null);
 
-  const { yearExpenses, currentMonthExpenses, lastMonthExpenses, isLoading } = useDashboardData(year);
+  const { yearExpenses, currentMonthExpenses, lastMonthExpenses, isLoading, isRefetching, refetch } =
+    useDashboardData(year);
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
 
@@ -40,6 +42,17 @@ export default function DashboardScreen() {
     const set = new Set(['GBP', ...yearExpenses.map((e) => e.currency)]);
     return Array.from(set).map((c) => ({ label: c, value: c }));
   }, [yearExpenses]);
+
+  // Owns the currency picker but renders it in the native header's top-right
+  // corner, not the scrollable body — react-navigation's per-screen way to put
+  // interactive, screen-owned controls in the header.
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <CurrencySwitcher value={displayCurrency} options={currencyOptions} onChange={setDisplayCurrency} />
+      ),
+    });
+  }, [navigation, displayCurrency, currencyOptions]);
 
   const monthly = useMemo(
     () => computeMonthlyTotals(yearExpenses, displayCurrency, selectedCategoryIds),
@@ -68,11 +81,13 @@ export default function DashboardScreen() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.colors.background }} contentContainerStyle={{ padding: theme.spacing.md }}>
-      <View style={{ marginBottom: theme.spacing.md }}>
-        <Select label="Display currency" options={currencyOptions} value={displayCurrency} onChange={setDisplayCurrency} />
-      </View>
-
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      contentContainerStyle={{ padding: theme.spacing.md }}
+      refreshControl={
+        <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={theme.colors.accent} colors={[theme.colors.accent]} />
+      }
+    >
       <MonthComparisonCard
         current={comparison.current}
         last={comparison.last}
@@ -140,30 +155,38 @@ export default function DashboardScreen() {
         <Text style={[theme.typography.h3, { color: theme.colors.textPrimary, marginBottom: theme.spacing.sm }]}>
           Tags
         </Text>
-        <TagCloud tagTotals={tagTotals} selectedTag={selectedTag} onSelectTag={setSelectedTag} />
+        <TagCloud tagTotals={tagTotals} selectedTag={tagModalTag} onSelectTag={setTagModalTag} />
       </Card>
 
       <Card>
-        <View style={styles.headerRow}>
-          <Text style={[theme.typography.h3, { color: theme.colors.textPrimary }]}>
-            Recent Expenses{selectedTag ? ` — #${selectedTag}` : ''}
-          </Text>
-          {selectedTag ? (
-            <Pressable onPress={() => setSelectedTag(null)} hitSlop={8}>
-              <Text style={[theme.typography.caption, { color: theme.colors.accent }]}>Clear</Text>
-            </Pressable>
-          ) : null}
-        </View>
-        <View style={{ marginTop: theme.spacing.sm }}>
-          <RecentExpensesWidget
-            expenses={currentMonthExpenses}
+        <Text style={[theme.typography.h3, { color: theme.colors.textPrimary, marginBottom: theme.spacing.sm }]}>
+          Recent Expenses
+        </Text>
+        <RecentExpensesWidget
+          expenses={currentMonthExpenses}
+          categoryById={categoryById}
+          accountById={accountById}
+          onPress={setSelectedExpense}
+        />
+      </Card>
+
+      <Modal
+        visible={!!tagModalTag}
+        onClose={() => setTagModalTag(null)}
+        title={tagModalTag ? `#${tagModalTag}` : 'Tag'}
+      >
+        {tagModalTag && (
+          <TagExpensesList
+            tag={tagModalTag}
             categoryById={categoryById}
             accountById={accountById}
-            onPress={setSelectedExpense}
-            tagFilter={selectedTag}
+            onPressExpense={(e) => {
+              setTagModalTag(null);
+              setSelectedExpense(e);
+            }}
           />
-        </View>
-      </Card>
+        )}
+      </Modal>
 
       <Modal visible={!!selectedExpense} onClose={() => setSelectedExpense(null)} title="Expense">
         {selectedExpense && (
