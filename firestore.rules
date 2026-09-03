@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Single-player app: every document lives under users/{uid}/**, and the
+    // only rule needed is "you can only touch your own subtree". Covers
+    // profile, expenses, categories, accounts, budgets, and settlements —
+    // one rule, not one per collection, so a new subcollection added later
+    // is covered automatically.
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Everything else is denied by default (no matching rule = no access).
+  }
+}

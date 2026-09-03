@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "PaperTrail",
+    "slug": "papertrail",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#F7F8FA",
+    "android": {
+      "package": "com.papertrail.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#1E3A5F"
+      }
+    },
+    "plugins": []
+  }
+}
