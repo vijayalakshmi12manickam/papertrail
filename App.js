@@ -8,6 +8,7 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 
 import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
+import { AppLockProvider } from './src/context/AppLockContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
 // staleTime is set generously by default here; individual hooks (Step 2) override
@@ -48,8 +49,10 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AuthProvider>
-            <StatusBar style="auto" />
-            <RootNavigator />
+            <AppLockProvider>
+              <StatusBar style="auto" />
+              <RootNavigator />
+            </AppLockProvider>
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>

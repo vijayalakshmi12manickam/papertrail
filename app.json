@@ -12,7 +12,15 @@
         "backgroundColor": "#1E3A5F"
       }
     },
-    "plugins": [],
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow PaperTrail to use Face ID to unlock the app."
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "177fd372-8536-4634-86dd-90f2e1044a4f"

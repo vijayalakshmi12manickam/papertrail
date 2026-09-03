@@ -11,6 +11,7 @@ import { exportExpensesAsCsv, exportExpensesAsXlsx } from '../../lib/exportFile'
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import ThemeToggle from '../../components/settings/ThemeToggle';
+import BiometricLockToggle from '../../components/settings/BiometricLockToggle';
 import ManagedListSection from '../../components/settings/ManagedListSection';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 
@@ -135,7 +136,14 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={{ marginBottom: theme.spacing.md }}>
-        <CollapsibleSection title="Categories">
+        <Text style={[theme.typography.h3, { color: theme.colors.textPrimary, marginBottom: theme.spacing.sm }]}>
+          Security
+        </Text>
+        <BiometricLockToggle />
+      </Card>
+
+      <Card style={{ marginBottom: theme.spacing.md }}>
+        <CollapsibleSection title="Categories" defaultOpen={false}>
           <ManagedListSection
             items={categories}
             onAdd={(data) => addCategory.mutate(data)}
@@ -149,7 +157,7 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={{ marginBottom: theme.spacing.md }}>
-        <CollapsibleSection title="Accounts / Banks">
+        <CollapsibleSection title="Accounts / Banks" defaultOpen={false}>
           <ManagedListSection
             items={accounts}
             onAdd={(data) => addAccount.mutate(data)}
@@ -163,7 +171,7 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={{ marginBottom: theme.spacing.md }}>
-        <CollapsibleSection title="Currencies">
+        <CollapsibleSection title="Currencies" defaultOpen={false}>
           <ManagedListSection
             items={currencies}
             onAdd={(data) => addCurrency.mutate(data)}
