@@ -23,6 +23,9 @@ export default function ImportReviewStep({
   onImport,
   importing,
   onCancel,
+  rawText,
+  onCopyRawText,
+  copied,
 }) {
   const { theme } = useAppTheme();
   const [editingId, setEditingId] = useState(null);
@@ -80,6 +83,14 @@ export default function ImportReviewStep({
                 {unparsedLines.length} line{unparsedLines.length === 1 ? '' : 's'} couldn't be parsed and were
                 skipped.
               </Text>
+            ) : null}
+
+            {(transactions.length === 0 || warnings.length > 0) && rawText ? (
+              <Pressable onPress={onCopyRawText} style={{ marginBottom: theme.spacing.sm }}>
+                <Text style={[theme.typography.caption, { color: theme.colors.accent }]}>
+                  {copied ? 'Copied!' : 'Copy raw extracted text (debug)'}
+                </Text>
+              </Pressable>
             ) : null}
 
             <View style={{ flexDirection: 'row', marginBottom: theme.spacing.sm }}>

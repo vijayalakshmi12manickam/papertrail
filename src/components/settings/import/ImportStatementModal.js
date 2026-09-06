@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, Alert } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { useAppTheme } from '../../../context/ThemeContext';
 import { useAuth } from '../../../context/AuthContext';
 import { useCategories } from '../../../hooks/useCategories';
@@ -35,12 +36,19 @@ export default function ImportStatementModal({ visible, onClose }) {
   const [password, setPassword] = useState('');
 
   const [bank, setBank] = useState(null);
+  const [rawText, setRawText] = useState('');
   const [transactions, setTransactions] = useState([]);
   const [warnings, setWarnings] = useState([]);
   const [unparsedLines, setUnparsedLines] = useState([]);
   const [accountId, setAccountId] = useState(null);
   const [currency, setCurrency] = useState('GBP');
   const [importedCount, setImportedCount] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyRawText = async () => {
+    await Clipboard.setStringAsync(rawText);
+    setCopied(true);
+  };
 
   useEffect(() => {
     if (visible) {
@@ -49,11 +57,13 @@ export default function ImportStatementModal({ visible, onClose }) {
       setPendingFile(null);
       setPassword('');
       setBank(null);
+      setRawText('');
       setTransactions([]);
       setWarnings([]);
       setUnparsedLines([]);
       setAccountId(accounts[0]?.id || null);
       setCurrency('GBP');
+      setCopied(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
@@ -63,6 +73,7 @@ export default function ImportStatementModal({ visible, onClose }) {
     setError('');
     try {
       const text = await extractStatementText(uri, pwd);
+      setRawText(text);
       const parsed = parseStatementText(text);
 
       if (!parsed.bank) {
@@ -179,6 +190,15 @@ export default function ImportStatementModal({ visible, onClose }) {
             </Text>
           ) : null}
 
+          {rawText ? (
+            <Button
+              title={copied ? 'Copied!' : 'Copy Raw Extracted Text (debug)'}
+              variant="outline"
+              onPress={handleCopyRawText}
+              style={{ marginBottom: theme.spacing.sm }}
+            />
+          ) : null}
+
           <Button title="Choose PDF" onPress={handlePick} disabled={!pdfAvailable} style={{ marginBottom: theme.spacing.sm }} />
           <Button title="Cancel" variant="outline" onPress={onClose} />
         </View>
@@ -228,6 +248,9 @@ export default function ImportStatementModal({ visible, onClose }) {
           onImport={handleImport}
           importing={bulkImport.isPending}
           onCancel={onClose}
+          rawText={rawText}
+          onCopyRawText={handleCopyRawText}
+          copied={copied}
         />
       )}
 
