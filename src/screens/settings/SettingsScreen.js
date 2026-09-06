@@ -14,10 +14,12 @@ import ThemeToggle from '../../components/settings/ThemeToggle';
 import BiometricLockToggle from '../../components/settings/BiometricLockToggle';
 import ManagedListSection from '../../components/settings/ManagedListSection';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
+import ImportStatementModal from '../../components/settings/import/ImportStatementModal';
 
 export default function SettingsScreen() {
   const { theme } = useAppTheme();
   const { user, signOut } = useAuth();
+  const [importVisible, setImportVisible] = useState(false);
 
   const { data: categories = [] } = useCategories();
   const addCategory = useAddCategory();
@@ -193,6 +195,17 @@ export default function SettingsScreen() {
         <Button title="Load Sample Data" variant="outline" onPress={handleSeedData} loading={seedSampleData.isPending} />
       </Card>
 
+      <Card style={{ marginBottom: theme.spacing.md }}>
+        <Text style={[theme.typography.h3, { color: theme.colors.textPrimary, marginBottom: 4 }]}>
+          Import Bank Statement
+        </Text>
+        <Text style={[theme.typography.caption, { color: theme.colors.textSecondary, marginBottom: theme.spacing.md }]}>
+          Import transactions from a Monzo or Barclays PDF statement — you'll review and approve everything
+          before it's added.
+        </Text>
+        <Button title="Import Statement" variant="outline" onPress={() => setImportVisible(true)} />
+      </Card>
+
       <Card>
         <Text style={[theme.typography.h3, { color: theme.colors.textPrimary, marginBottom: 4 }]}>
           Export Data
@@ -215,6 +228,8 @@ export default function SettingsScreen() {
           disabled={!!exporting}
         />
       </Card>
+
+      <ImportStatementModal visible={importVisible} onClose={() => setImportVisible(false)} />
     </ScrollView>
   );
 }
